@@ -1,7 +1,7 @@
 package edu.cmu.hcii.paint;
-import javax.swing.*;
 import java.awt.*;
 import java.util.*;
+import javax.swing.*;
 
 public class PaintCanvas extends JPanel {
 
@@ -31,7 +31,7 @@ public class PaintCanvas extends JPanel {
         
         Rectangle clipBounds = g.getClipBounds();
         g.setColor(Color.white);
-        g.fillRect((int)clipBounds.getX(), (int)clipBounds.getX(), 
+        g.fillRect((int)clipBounds.getX(), (int)clipBounds.getY(), 
                     (int)clipBounds.getWidth(), (int)clipBounds.getHeight());
         
         Iterator paintObjectIterator = paintObjects.iterator();
@@ -75,8 +75,20 @@ public class PaintCanvas extends JPanel {
         
         history.addElement(new Vector(paintObjects));
         paintObjects.addElement(newObject);
+        expandCanvasToFit(newObject);
         repaint();
         
+    }
+
+    private void expandCanvasToFit(PaintObject obj) {
+        Rectangle bbox = obj.getBoundingBox();
+        Dimension current = getPreferredSize();
+        int newWidth  = Math.max(current.width,  bbox.x + bbox.width  + 20);
+        int newHeight = Math.max(current.height, bbox.y + bbox.height + 20);
+        if (newWidth != current.width || newHeight != current.height) {
+            setPreferredSize(new Dimension(newWidth, newHeight));
+            revalidate();
+        }
     }
     
     public void clear() {
@@ -89,8 +101,10 @@ public class PaintCanvas extends JPanel {
 
     public void undo() { 
         
+        if(history.isEmpty()) return;
         paintObjects = (Vector)history.lastElement();
         history.removeElement(history.lastElement());
+        repaint();
         
     }
 
